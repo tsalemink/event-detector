@@ -8,3 +8,6 @@ data
 setup.cfg
 dist/
 eventdetector.egg-info/
+
+# Intellij projects
+.idea/
