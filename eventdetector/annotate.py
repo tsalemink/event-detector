@@ -1,5 +1,4 @@
 from eventdetector.utils import *
-import sys
 import urllib
 
 import matplotlib.pyplot as plt
@@ -8,7 +7,6 @@ import numpy as np
 import sys
 sys.path.append("/usr/local/lib/python2.7/dist-packages")
 from ezc3d import c3d # Use ezc3d instead of btk
-import re
 import os
 import csv
 import keras
