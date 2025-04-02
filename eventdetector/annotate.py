@@ -16,8 +16,8 @@ def derivative(traj, nframes):
     traj_der = traj[1:nframes,:] - traj[0:(nframes-1),:]
     return np.append(traj_der, [[0,0,0]], axis=0)
 
-def extract_kinematics(leg, filename_in):
     print("Trying %s" % (filename_in))
+def extract_kinematics(filename_in):
     
     # Open c3d and read data
     c = c3d(filename_in)
@@ -173,7 +173,7 @@ def process(filename_in, filename_out):
     idxL = [(int(i / 3)) * 3 + i for i in range(30)]
     idxR = [3 + (int(i / 3)) * 3 + i for i in range(30)]
 
-    inputs = extract_kinematics('L', filename_in)
+    inputs = extract_kinematics(filename_in)
     inputsL = inputs[:, idxL]
     inputsR = inputs[:, idxR]
     XL, YL = convert_data(inputsL)
