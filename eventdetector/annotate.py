@@ -9,14 +9,17 @@ import os
 import csv
 import keras
 from keras.models import load_model
+
 keras.losses.weighted_binary_crossentropy = weighted_binary_crossentropy
 
-def derivative(traj, nframes):
-    traj_der = traj[1:nframes,:] - traj[0:(nframes-1),:]
-    return np.append(traj_der, [[0,0,0]], axis=0)
 
-    print("Trying %s" % (filename_in))
+def derivative(traj, nframes):
+    traj_der = traj[1:nframes, :] - traj[0:(nframes-1), :]
+    return np.append(traj_der, [[0, 0, 0]], axis=0)
+
+
 def extract_kinematics(filename_in):
+    print("Trying %s" % filename_in)
     
     # Open c3d and read data
     c = c3d(filename_in)
@@ -78,18 +81,18 @@ def extract_kinematics(filename_in):
             markersIdx = labels.index(preFix + ':R' + v)
             traj[len(markers) + i] = np.transpose(data[0:3, markersIdx, :]) - midASI
         except:
-             print("Error while reading marker data: %d, %s" % (i,v))
-             return
+            print("Error while reading marker data: %d, %s" % (i, v))
+            return
 
-        traj[i][:,0] = traj[i][:,0] #* incrementX
-        traj[len(markers) + i][:,0] = traj[len(markers) + i][:,0] #* incrementX
-        traj[i][:,2] = traj[i][:,2] #* incrementX
-        traj[len(markers) + i][:,2] = traj[len(markers) + i][:,2] #* incrementX
+        traj[i][:, 0] = traj[i][:, 0]   # * incrementX
+        traj[len(markers) + i][:, 0] = traj[len(markers) + i][:, 0]  # * incrementX
+        traj[i][:, 2] = traj[i][:, 2]   # * incrementX
+        traj[len(markers) + i][:, 2] = traj[len(markers) + i][:, 2]  # * incrementX
 
     for i in range(len(markers)*2):
         traj[len(markers)*2 + i] = derivative(traj[i], nframes) 
         
-    midASI = midASI #* incrementX
+    midASI = midASI     # * incrementX
 
     midASIvel = derivative(midASI, nframes)
     midASIacc = derivative(midASIvel, nframes)
@@ -107,7 +110,7 @@ def convert_data(data):
     # TODO: temporary mess
     def derivative(traj):
         nframes = traj.shape[0]
-        traj_der = traj[1:nframes,:] - traj[0:(nframes-1),:]
+        traj_der = traj[1:nframes, :] - traj[0:(nframes-1), :]
         return np.append(traj_der, [[0] * traj.shape[1]], axis=0)
 
     # We assume the data has following sequences
@@ -132,28 +135,30 @@ def convert_data(data):
     # - joint angles (5 x 3)
     # - velocity of markers (5 x 3)
     # - velocity and acceleration of the pelvis (2 x 3)
-    X = np.zeros( (data.shape[0], 15 + 15 + 6) )
-    X[:,0:15] = data[:,0:15]
-    X[:,15:30] = derivative(data[:,15:30])
-    X[:,30:33] = derivative(data[:,24:27])
-    X[:,33:36] = derivative(derivative(data[:,24:27]))
+    X = np.zeros((data.shape[0], 15 + 15 + 6))
+    X[:, 0:15] = data[:, 0:15]
+    X[:, 15:30] = derivative(data[:, 15:30])
+    X[:, 30:33] = derivative(data[:, 24:27])
+    X[:, 33:36] = derivative(derivative(data[:, 24:27]))
 
     Y = None
     if data.shape[1] != 32:
-        Y = data[:,30:32]
+        Y = data[:, 30:32]
 
     return X, Y
 
+
 def neural_method(inputs, model):
     cols = list(range(15)) + [15 + i for i in range(13)] + [30 + i for i in range(6)]
-    res = model.predict(inputs[:,cols].reshape((1,inputs.shape[0],len(cols))))
+    res = model.predict(inputs[:, cols].reshape((1, inputs.shape[0], len(cols))))
     peakind = peakdet(res[0], 0.7)
     frames = list(map(int, [k for k, v in peakind[0]]))
     return frames
 
+
 def get_models():
     if not os.path.exists("models/FO.h5"):
-        print ("Model not found. Downloading...")
+        print("Model not found. Downloading...")
         try:
             os.makedirs("models")
         except:
@@ -162,7 +167,7 @@ def get_models():
         urlretrieve(model_path, "models/FO.h5")
         model_path = "https://s3-eu-west-1.amazonaws.com/kidzinski/event-detector/HS.h5"
         urlretrieve(model_path, "models/HS.h5")
-        print ("Model downloaded!")
+        print("Model downloaded!")
 
 get_models()
 modelFO = load_model("models/FO.h5")
@@ -178,11 +183,12 @@ def process(filename_in, filename_out):
     XL, YL = convert_data(inputsL)
     XR, YR = convert_data(inputsR)
 
-    events = {}
-    events[("Foot Strike","Left")] = neural_method(XR, modelFO)
-    events[("Foot Strike","Right")] = neural_method(XL, modelFO)
-    events[("Foot Off","Left")] = neural_method(XR, modelHS)
-    events[("Foot Off","Right")] = neural_method(XL, modelHS)
+    events = {
+        ("Foot Strike", "Left"): neural_method(XR, modelFO),
+        ("Foot Strike", "Right"): neural_method(XL, modelFO),
+        ("Foot Off", "Left"): neural_method(XR, modelHS),
+        ("Foot Off", "Right"): neural_method(XL, modelHS),
+    }
 
     a_file = open(filename_out, 'w')
     writer = csv.writer(a_file)
@@ -192,4 +198,3 @@ def process(filename_in, filename_out):
     a_file.close()
 
     return
-
