@@ -10,6 +10,7 @@ sys.path.append("/usr/local/lib/python2.7/dist-packages")
 from ezc3d import c3d # Use ezc3d instead of btk
 import re
 import os
+import csv
 import keras
 from keras.models import load_model
 keras.losses.weighted_binary_crossentropy = weighted_binary_crossentropy
