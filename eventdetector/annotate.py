@@ -173,10 +173,10 @@ def convert_data(data):
     return X, Y
 
 def neural_method(inputs, model):
-    cols = range(15) + [15 + i for i in range(13)] + [30 + i for i in range(6)] 
+    cols = list(range(15)) + [15 + i for i in range(13)] + [30 + i for i in range(6)]
     res = model.predict(inputs[:,cols].reshape((1,inputs.shape[0],len(cols))))
     peakind = peakdet(res[0], 0.7)
-    frames = [k for k, v in peakind[0]]
+    frames = list(map(int, [k for k, v in peakind[0]]))
     return frames
 
 def get_models():
