@@ -1,5 +1,5 @@
 from eventdetector.utils import *
-import urllib
+from urllib.request import urlretrieve
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -187,9 +187,9 @@ def get_models():
         except:
             pass
         model_path = "https://s3-eu-west-1.amazonaws.com/kidzinski/event-detector/FO.h5"
-        urllib.urlretrieve (model_path, "models/FO.h5")
+        urlretrieve(model_path, "models/FO.h5")
         model_path = "https://s3-eu-west-1.amazonaws.com/kidzinski/event-detector/HS.h5"
-        urllib.urlretrieve (model_path, "models/HS.h5")
+        urlretrieve(model_path, "models/HS.h5")
         print ("Model downloaded!")
 
 get_models()
