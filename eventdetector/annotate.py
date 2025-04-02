@@ -198,10 +198,8 @@ modelFO = load_model("models/FO.h5")
 modelHS = load_model("models/HS.h5")
 
 def process(filename_in, filename_out):
-    idxL = [(i / 3) * 3 + i for i in range(30)]
-    idxL = (list(map(int, idxL)))
-    idxR = [3 + (i / 3) * 3 + i for i in range(30)]
-    idxR = (list(map(int, idxR)))
+    idxL = [(int(i / 3)) * 3 + i for i in range(30)]
+    idxR = [3 + (int(i / 3)) * 3 + i for i in range(30)]
 
     inputs = extract_kinematics('L', filename_in)
     inputsL = inputs[:, idxL]
