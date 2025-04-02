@@ -1,7 +1,6 @@
 from eventdetector.utils import *
 from urllib.request import urlretrieve
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import sys
@@ -102,34 +101,8 @@ def extract_kinematics(leg, filename_in):
 
     curves = np.concatenate(angles + traj, axis=1)
 
-    # Plot each component of the big array
-    # for i in range(3 * len(kinematics)):
-    #     plt.plot(range(nframes), curves[:,i])
-    # Add events as output
-    # for event in btk.Iterate(acq.GetEvents()):
-    #     if event.GetFrame() >= nframes:
-    #         print("Event happened too far")
-    #         return
-    #     if len(event.GetContext()) == 0:
-    #         print("No events")
-    #         return
-    #     #        if event.GetContext()[0] == leg:
-    #     if event.GetLabel() == "Foot Strike":
-    #         outputs[event.GetFrame() - first_frame, 0] = 1
-    #     elif event.GetLabel() == "Foot Off":
-    #         outputs[event.GetFrame() - first_frame, 1] = 1
-    #     print(event.GetLabel(), event.GetContext(), event.GetFrame(), event.GetFrame() - first_frame)
-    #
-    # if (np.sum(outputs) == 0):
-    #     print("No events in %s!" % (filename_in,))
-    #     return
-    #
-    # arr = np.concatenate((curves, outputs), axis=1)
-
     return curves
 
-#    print("Writig %s" % filename_out)
-#    np.savetxt(filename_out, arr, delimiter=',')
 
 def convert_data(data):
     # TODO: temporary mess
