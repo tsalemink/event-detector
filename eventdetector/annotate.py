@@ -4,7 +4,6 @@ from urllib.request import urlretrieve
 import numpy as np
 
 import sys
-sys.path.append("/usr/local/lib/python2.7/dist-packages")
 from ezc3d import c3d # Use ezc3d instead of btk
 import os
 import csv
