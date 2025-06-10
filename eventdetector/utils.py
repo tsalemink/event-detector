@@ -60,6 +60,27 @@ def plot_history(history):
     plt.show()
     
 
+# TODO: This function is failing in the new keras version.
+#   But the inputs look pretty similar.
+#   At least they are both similar looking arrays and are the same length.
+#   We should maybe check that they are actually the same shape...?!
+
+# TODO: Unfortunately, using the old weights in the new keras version produces random nonsense results...
+#   The inputs to the `model.predict` method are identical but the outputs are completely different.
+#   There isn't really any way to debug this since the issue is in the model.
+#   The model has the same config and weights in both cases, so what else can we check...???
+
+# TODO: ACTUALLY, the final results are half decent!
+#   Even though the vectors don't make any sense...
+#   ...
+#   The main issue is the foot-off events.
+#   In the docker, the printed (OFF) events are GOOD, but when they are added to the file they have all been adjusted incorrectly by ~15.
+#   This same bad adjustment is present in the local (CSV) results...
+#   BUT WHY...?
+#   Maybe if we can figure out what is causing this in the docker, we can solve the issue locally...?
+#   First, find out what is/was printing those results...!
+#   AHHHH, those are NOT results!!!
+#   They are just the ORIGINAL EVENTS defined in the C3D file!!!
 def peakdet(v, delta, x = None):
     """
     Converted from MATLAB script at http://billauer.co.il/peakdet.html
@@ -92,7 +113,31 @@ def peakdet(v, delta, x = None):
         x = arange(len(v))
     
     v = asarray(v)
-    
+
+    # TODO: REMOVE:
+    # print(f"V: {v}")
+    # print(f"SIZE: {len(v)}")
+    # print(f"SHAPE: {v.shape}")
+    #   (3.6)
+    #   V: [[1.29914582e-02]
+    #  [1.02045422e-03]
+    #  [7.69939448e-04]
+    #   ...
+    #   V: [[1.51821403e-02]
+    #  [1.26197957e-03]
+    #  [9.16094636e-04]
+
+    # # TODO: REMOVE:
+    # #   Save visualisation of data.
+    # plt.plot(v)
+    # plt.title("Array visualization")
+    # plt.xlabel("Index")
+    # plt.ylabel("Value")
+    # plt.grid(True)
+    # plt.tight_layout()
+    # plt.savefig("array_plot(3.6).png")
+    # # plt.savefig("array_plot(3.11).png")
+
     if len(v) != len(x):
         sys.exit('Input vectors v and x must have same length')
     
@@ -106,29 +151,65 @@ def peakdet(v, delta, x = None):
     mnpos, mxpos = NaN, NaN
     
     lookformax = True
+
+    # TODO: Yes, the new results are nonsense.
+    #   We should still be able to use the model to classify events...!!!
     
     for i in arange(len(v)):
         this = v[i]
+
+        # TODO: REMOVE:
+        # print(f"THIS: {this}")
+        #   (new)
+        #   Nah this doesn't help...huge list.
+        #   Try debug mode...?!
+
         if this > mx:
             mx = this
             mxpos = x[i]
         if this < mn:
             mn = this
             mnpos = x[i]
-        
+
+        # # TODO: The checks above will always be true...?
+        # #   So `mn` and `mx` will always be `this`...?
+        # # print(f"MN: {mn}")
+        # # print(f"MN-POS: {mnpos}")
+        # print(f"MX: {mx}")
+        # # print(f"MX-POS: {mxpos}")
+        # print(f"DELTA: {delta}")
+
         if lookformax:
             if this < mx-delta:
-                maxtab.append((mxpos, mx))
+
+                # TODO: REMOVE:
+                # print(f"THIS: {this}")
+                # print(f"mx-delta: {mx} - {delta}")
+
+                # TODO: Fix required for newer numpy versions.
+                # maxtab.append((mxpos, mx))
+                maxtab.append((mxpos, float(mx)))
                 mn = this
                 mnpos = x[i]
                 lookformax = False
         else:
             if this > mn+delta:
-                mintab.append((mnpos, mn))
+                # TODO: See above.
+                # mintab.append((mnpos, mn))
+                mintab.append((mnpos, float(mn)))
                 mx = this
                 mxpos = x[i]
                 lookformax = True
 
+    # TODO: REMOVE:
+    #   Actually, these are different, the failing one (new keras) seems to contain extra events...??
+    print(f"MAXTAB: {maxtab}")
+    #   (new)
+    #   MAXTAB: [(44, array([0.8742184], dtype=float32)), (83, array([0.725206], dtype=float32)), (146, array([0.9278417], dtype=float32)), (188, array([0.8645999], dtype=float32)), (246, array([0.9330341], dtype=float32)), (281, array([0.77985996], dtype=float32)), (353, array([0.9330332], dtype=float32)), (457, array([0.9433773], dtype=float32)), (499, array([0.88888377], dtype=float32)), (563, array([0.94620514], dtype=float32))]
+    #   ...
+    #   MAXTAB: [(43, array([0.86300987], dtype=float32)), (146, array([0.91586727], dtype=float32)), (246, array([0.9157732], dtype=float32)), (352, array([0.9152118], dtype=float32)), (456, array([0.9192288], dtype=float32)), (562, array([0.93341875], dtype=float32))]
+
+    # TODO: This line is what's failing...
     return array(maxtab), array(mintab)
 
 def load_file(filename, input_dim, output_dim, nseqlen = 128):
